@@ -1,0 +1,8 @@
+# Chalk Talk app environment (Python 3.11)
+anthropic==1.15.0
+fastapi==0.143.2
+uvicorn==0.54.0
+python-multipart==0.0.32
+python-dotenv==1.2.4
+pillow==12.3.0
+numpy

@@ -1,0 +1,91 @@
+diff --git a/inference.py b/inference.py
+index a0b0079..fa5db13 100644
+--- a/inference.py
++++ b/inference.py
+@@ -138,6 +138,8 @@ if __name__ == '__main__':
+ 
+     if torch.cuda.is_available() and not args.cpu:
+         args.device = "cuda"
++    elif torch.backends.mps.is_available() and not args.cpu:
++        args.device = "mps"
+     else:
+         args.device = "cpu"
+ 
+diff --git a/src/facerender/modules/dense_motion.py b/src/facerender/modules/dense_motion.py
+index a286ead..7d32b12 100644
+--- a/src/facerender/modules/dense_motion.py
++++ b/src/facerender/modules/dense_motion.py
+@@ -1,7 +1,7 @@
+ from torch import nn
+ import torch.nn.functional as F
+ import torch
+-from src.facerender.modules.util import Hourglass, make_coordinate_grid, kp2gaussian
++from src.facerender.modules.util import Hourglass, make_coordinate_grid, kp2gaussian, cast_type
+ 
+ from src.facerender.sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
+ 
+@@ -72,7 +72,7 @@ class DenseMotionNetwork(nn.Module):
+         heatmap = gaussian_driving - gaussian_source
+ 
+         # adding background feature
+-        zeros = torch.zeros(heatmap.shape[0], 1, spatial_size[0], spatial_size[1], spatial_size[2]).type(heatmap.type())
++        zeros = cast_type(torch.zeros(heatmap.shape[0], 1, spatial_size[0], spatial_size[1], spatial_size[2]), heatmap.type())
+         heatmap = torch.cat([zeros, heatmap], dim=1)
+         heatmap = heatmap.unsqueeze(2)         # (bs, num_kp+1, 1, d, h, w)
+         return heatmap
+diff --git a/src/facerender/modules/util.py b/src/facerender/modules/util.py
+index b916dee..db282a2 100644
+--- a/src/facerender/modules/util.py
++++ b/src/facerender/modules/util.py
+@@ -9,6 +9,13 @@ from src.facerender.sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
+ import torch.nn.utils.spectral_norm as spectral_norm
+ 
+ 
++def cast_type(t, type):
++    # tensor.type('torch.mps.FloatTensor') isn't supported; move to MPS explicitly
++    if isinstance(type, str) and type.startswith('torch.mps.'):
++        return t.float().to('mps')
++    return t.type(type)
++
++
+ def kp2gaussian(kp, spatial_size, kp_variance):
+     """
+     Transform a keypoint into gaussian like representation
+@@ -37,8 +44,8 @@ def make_coordinate_grid_2d(spatial_size, type):
+     Create a meshgrid [-1,1] x [-1,1] of given spatial_size.
+     """
+     h, w = spatial_size
+-    x = torch.arange(w).type(type)
+-    y = torch.arange(h).type(type)
++    x = cast_type(torch.arange(w), type)
++    y = cast_type(torch.arange(h), type)
+ 
+     x = (2 * (x / (w - 1)) - 1)
+     y = (2 * (y / (h - 1)) - 1)
+@@ -53,9 +60,9 @@ def make_coordinate_grid_2d(spatial_size, type):
+ 
+ def make_coordinate_grid(spatial_size, type):
+     d, h, w = spatial_size
+-    x = torch.arange(w).type(type)
+-    y = torch.arange(h).type(type)
+-    z = torch.arange(d).type(type)
++    x = cast_type(torch.arange(w), type)
++    y = cast_type(torch.arange(h), type)
++    z = cast_type(torch.arange(d), type)
+ 
+     x = (2 * (x / (w - 1)) - 1)
+     y = (2 * (y / (h - 1)) - 1)
+diff --git a/src/utils/face_enhancer.py b/src/utils/face_enhancer.py
+index 15851a1..88d1206 100644
+--- a/src/utils/face_enhancer.py
++++ b/src/utils/face_enhancer.py
+@@ -105,7 +105,8 @@ def enhancer_generator_no_len(images, method='gfpgan', bg_upsampler='realesrgan'
+         upscale=2,
+         arch=arch,
+         channel_multiplier=channel_multiplier,
+-        bg_upsampler=bg_upsampler)
++        bg_upsampler=bg_upsampler,
++        device=torch.device('mps') if torch.backends.mps.is_available() else None)
+ 
+     # ------------------------ restore ------------------------
+     for idx in tqdm(range(len(images)), 'Face Enhancer:'):

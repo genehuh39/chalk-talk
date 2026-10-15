@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv-*/
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# User uploads and rendered media
+chalk-talk/jobs/
+chalk-talk/previews/
+talking-head/outputs/
+*.mp4
+*.mov
+*.wav
+
+# Third-party engine (cloned and patched by setup.sh) and model weights
+talking-head/SadTalker/
+*.pth
+*.pth.tar
+*.safetensors
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

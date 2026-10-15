@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chalk Talk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --slate: #1d2b25;
+    --slate-2: #24352e;
+    --slate-3: #2e443b;
+    --line: rgba(238, 238, 228, 0.14);
+    --chalk: #eeeee4;
+    --dim: #a9b2a8;
+    --yellow: #f6d65c;
+    --red: #f26860;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 20% -10%, #2a3d35 0%, transparent 60%), var(--slate);
+    color: var(--chalk);
+    font: 15px/1.5 Inter, system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+  header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+  h1 {
+    font-family: "Permanent Marker", cursive;
+    font-weight: 400;
+    font-size: clamp(34px, 6vw, 52px);
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  h1 span { color: var(--yellow); }
+  header p { margin: 0; color: var(--dim); }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--slate-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+  .step { margin-bottom: 26px; }
+  .step:last-child { margin-bottom: 0; }
+  .step h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .step h2 b { color: var(--yellow); margin-right: 6px; }
+
+  /* Headshot */
+  .drop {
+    display: flex; align-items: center; gap: 18px;
+    border: 2px dashed rgba(238, 238, 228, 0.28);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .drop:hover, .drop.over { border-color: var(--yellow); background: rgba(246, 214, 92, 0.05); }
+  .avatar {
+    width: 88px; height: 88px; flex: none;
+    border-radius: 50%;
+    border: 3px solid var(--chalk);
+    background: var(--slate-3) center/cover no-repeat;
+    display: grid; place-items: center;
+    color: var(--dim); font-size: 30px;
+  }
+  .drop strong { display: block; }
+  .drop small { color: var(--dim); }
+  input[type=file] { display: none; }
+
+  /* Formations & plays */
+  .formations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 520px) { .formations { grid-template-columns: 1fr; } }
+  .opt {
+    text-align: left;
+    background: var(--slate-3);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: inherit;
+    font: inherit;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color .15s, transform .1s;
+  }
+  .opt:hover { border-color: rgba(238, 238, 228, 0.3); }
+  .opt.sel { border-color: var(--yellow); }
+  .opt .name { font-weight: 600; display: block; }
+  .opt .sub { color: var(--dim); font-size: 13px; }
+  .plays { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 7px; border-radius: 99px; margin-left: 6px; vertical-align: 2px;
+  }
+  .tag.run { background: rgba(242, 104, 96, .18); color: var(--red); }
+  .tag.pass { background: rgba(140, 196, 236, .18); color: #8cc4ec; }
+  .muted { color: var(--dim); font-size: 14px; }
+
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  select {
+    background: var(--slate-3); color: inherit; border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 12px; font: inherit; min-width: 220px;
+  }
+  label.toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--dim); }
+  label.toggle input { accent-color: var(--yellow); width: 18px; height: 18px; }
+
+  .go {
+    width: 100%;
+    margin-top: 6px;
+    font-family: "Permanent Marker", cursive;
+    font-size: 24px;
+    letter-spacing: 1px;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--yellow);
+    color: #1d2b25;
+    cursor: pointer;
+    transition: transform .1s, opacity .15s;
+  }
+  .go:hover:not(:disabled) { transform: translateY(-1px); }
+  .go:disabled { opacity: .4; cursor: not-allowed; }
+  .note { color: var(--dim); font-size: 13px; margin-top: 10px; text-align: center; }
+  .warn {
+    background: rgba(242, 104, 96, .12); border: 1px solid rgba(242, 104, 96, .4);
+    color: #ffb4ae; border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 16px;
+  }
+
+  /* Right column */
+  .phone {
+    aspect-ratio: 9 / 16;
+    width: 100%;
+    max-width: 380px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: #16211c;
+    overflow: hidden;
+    display: grid; place-items: center;
+    position: relative;
+  }
+  .phone video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+  .placeholder { text-align: center; padding: 24px; color: var(--dim); }
+  .placeholder .big { font-family: "Permanent Marker", cursive; font-size: 30px; color: var(--chalk); opacity: .8; }
+
+  .stages { list-style: none; margin: 0; padding: 0; width: 100%; padding: 22px; }
+  .stages li { margin-bottom: 14px; }
+  .stages .lbl { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; color: var(--dim); }
+  .stages li.active .lbl, .stages li.done .lbl { color: var(--chalk); }
+  .bar { height: 6px; background: rgba(238, 238, 228, .1); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--yellow); transition: width .4s; }
+  .stages li.done .bar i { background: #8fd18a; }
+  .elapsed { color: var(--dim); font-size: 13px; text-align: center; margin-top: 4px; }
+
+  .after { margin-top: 16px; display: none; }
+  .after.show { display: block; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--slate-3); border: 1px solid var(--line); color: var(--chalk);
+    padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn:hover { border-color: var(--yellow); }
+  .script { margin-top: 16px; }
+  .script h3 { font-family: "Permanent Marker", cursive; font-weight: 400; margin: 0 0 8px; font-size: 20px; }
+  .script ol { margin: 0; padding-left: 20px; }
+  .script li { margin-bottom: 6px; }
+  .script .cue { color: var(--yellow); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; display: block; }
+  .err { color: #ffb4ae; text-align: center; padding: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Chalk <span>Talk</span></h1>
+    <p>Pick a play. Coach breaks down how to stop it, on the chalkboard, in 30 seconds.</p>
+  </header>
+
+  <div class="grid">
+    <form class="card" id="form">
+      <div class="warn" id="cfgWarn" hidden></div>
+
+      <div class="step">
+        <h2><b>1</b>Coach's headshot</h2>
+        <label class="drop" id="drop">
+          <div class="avatar" id="avatar">+</div>
+          <div>
+            <strong id="dropTitle">Upload a headshot</strong>
+            <small>Front-facing, well lit, one face. JPG or PNG.</small>
+          </div>
+          <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+        </label>
+      </div>
+
+      <div class="step">
+        <h2><b>2</b>Offensive formation</h2>
+        <div class="formations" id="formations"></div>
+      </div>
+
+      <div class="step">
+        <h2><b>3</b>The play</h2>
+        <div class="plays" id="plays"><p class="muted">Pick a formation first.</p></div>
+      </div>
+
+      <div class="step">
+        <h2><b>4</b>Coach's voice</h2>
+        <div class="row">
+          <select id="voice"></select>
+          <label class="toggle"><input type="checkbox" id="enhance" checked> Sharpen face (adds ~1 min)</label>
+        </div>
+      </div>
+
+      <button class="go" id="go" type="submit" disabled>Draw it up</button>
+      <p class="note">Rendering takes about 10 to 13 minutes on this Mac.</p>
+    </form>
+
+    <div>
+      <div class="phone" id="phone">
+        <div class="placeholder"><div class="big">X's &amp; O's</div><p>Your video shows up here.</p></div>
+      </div>
+      <div class="after" id="after">
+        <div class="row">
+          <a class="btn" id="download" href="#">Download MP4</a>
+          <button class="btn" type="button" id="again">Make another</button>
+        </div>
+      </div>
+      <div class="script card" id="script" hidden></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { file: null, formation: null, play: null, menu: null, polling: null, started: null };
+const STAGES = [
+  ["check", "Checking headshot"],
+  ["script", "Writing the script"],
+  ["voice", "Recording the voice"],
+  ["coach", "Animating the coach"],
+  ["cutout", "Cutting out the coach"],
+  ["board", "Drawing the chalkboard"],
+  ["compose", "Final cut"],
+];
+
+function ready() {
+  $("go").disabled = !(state.file && state.play) || !!state.polling;
+}
+
+async function init() {
+  const [menu, cfg] = await Promise.all([fetch("/api/menu").then(r => r.json()), fetch("/api/config").then(r => r.json())]);
+  state.menu = menu;
+  if (!cfg.llm_ready) {
+    $("cfgWarn").hidden = false;
+    $("cfgWarn").textContent = "Script writer isn't configured: " + cfg.error;
+  }
+  $("formations").innerHTML = menu.formations.map(f => `
+    <button type="button" class="opt" data-f="${f.id}">
+      <span class="name">${f.name}</span><span class="sub">${f.personnel}</span>
+    </button>`).join("");
+  $("formations").querySelectorAll(".opt").forEach(b => b.onclick = () => pickFormation(b.dataset.f));
+  $("voice").innerHTML = Object.entries(menu.voices).map(([id, name]) => `<option value="${id}">${name}</option>`).join("");
+
+  const id = location.hash.slice(1);
+  if (id) watch(id);
+}
+
+function pickFormation(fid) {
+  state.formation = fid;
+  state.play = null;
+  document.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("sel", b.dataset.f === fid));
+  const f = state.menu.formations.find(x => x.id === fid);
+  $("plays").innerHTML = f.plays.map(p => `
+    <button type="button" class="opt" data-p="${p.id}">
+      <span class="name">${p.name}<span class="tag ${p.type}">${p.type.toUpperCase()}</span></span>
+    </button>`).join("");
+  $("plays").querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    state.play = b.dataset.p;
+    $("plays").querySelectorAll(".opt").forEach(x => x.classList.toggle("sel", x === b));
+    ready();
+  });
+  ready();
+}
+
+function setFile(file) {
+  if (!file) return;
+  state.file = file;
+  const url = URL.createObjectURL(file);
+  $("avatar").style.backgroundImage = `url(${url})`;
+  $("avatar").textContent = "";
+  $("dropTitle").textContent = file.name;
+  ready();
+}
+$("photo").onchange = (e) => setFile(e.target.files[0]);
+const drop = $("drop");
+drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); setFile(e.dataTransfer.files[0]); });
+
+$("form").onsubmit = async (e) => {
+  e.preventDefault();
+  const fd = new FormData();
+  fd.append("photo", state.file);
+  fd.append("play_id", state.play);
+  fd.append("voice", $("voice").value);
+  fd.append("enhance", $("enhance").checked);
+  $("go").disabled = true;
+  const r = await fetch("/api/jobs", { method: "POST", body: fd });
+  const body = await r.json();
+  if (!r.ok) {
+    showError(body.detail || "Something went wrong.");
+    ready();
+    return;
+  }
+  location.hash = body.id;
+  watch(body.id);
+};
+
+function renderStages(s) {
+  const active = s.stage;
+  $("phone").innerHTML = `<ul class="stages">${STAGES.map(([k, label]) => {
+    const p = s.progress[k] || 0;
+    const cls = p >= 1 ? "done" : (k === active || (active === "coach" && k === "board")) ? "active" : "";
+    return `<li class="${cls}"><div class="lbl"><span>${label}</span><span>${Math.round(p * 100)}%</span></div>
+      <div class="bar"><i style="width:${p * 100}%"></i></div></li>`;
+  }).join("")}</ul>`;
+  const secs = Math.round(Date.now() / 1000 - s.created);
+  const queued = s.queue_position ? ` · ${s.queue_position} in line` : "";
+  $("phone").insertAdjacentHTML("beforeend", `<div class="elapsed" style="position:absolute;bottom:14px;width:100%">${Math.floor(secs / 60)}m ${secs % 60}s elapsed${queued}</div>`);
+}
+
+function renderScript(script) {
+  if (!script) return;
+  $("script").hidden = false;
+  $("script").innerHTML = `<h3>${escapeHtml(script.title)}</h3><ol>${script.beats.map(b =>
+    `<li><span class="cue">${b.cue.replace(/_/g, " ")}</span>${escapeHtml(b.narration)}</li>`).join("")}</ol>`;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function showError(msg) {
+  $("phone").innerHTML = `<div class="err">${escapeHtml(msg)}</div>`;
+}
+
+function watch(id) {
+  clearInterval(state.polling);
+  $("after").classList.remove("show");
+  const tick = async () => {
+    const r = await fetch(`/api/jobs/${id}`);
+    if (!r.ok) { clearInterval(state.polling); state.polling = null; location.hash = ""; ready(); return; }
+    const s = await r.json();
+    renderScript(s.script);
+    if (s.state === "done") {
+      clearInterval(state.polling); state.polling = null;
+      $("phone").innerHTML = `<video src="/api/jobs/${id}/video" controls autoplay playsinline></video>`;
+      $("download").href = `/api/jobs/${id}/video?download=1`;
+      $("after").classList.add("show");
+      ready();
+    } else if (s.state === "error") {
+      clearInterval(state.polling); state.polling = null;
+      showError(s.error || "The render failed.");
+      ready();
+    } else {
+      renderStages(s);
+    }
+  };
+  state.polling = setInterval(tick, 1500);
+  tick();
+  ready();
+}
+
+$("again").onclick = () => {
+  location.hash = "";
+  $("after").classList.remove("show");
+  $("script").hidden = true;
+  $("phone").innerHTML = `<div class="placeholder"><div class="big">X's &amp; O's</div><p>Your video shows up here.</p></div>`;
+  ready();
+};
+
+init();
+</script>
+</body>
+</html>

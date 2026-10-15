@@ -1,0 +1,11 @@
+{
+ "title": "How to stop the Zone Read",
+ "beats": [
+  {"cue": "show_formation", "narration": "Pistol formation. Quarterback at four yards, back right behind him."},
+  {"cue": "run_play", "narration": "Zone read. They leave your end unblocked and let the quarterback read him."},
+  {"cue": "show_defense", "narration": "The answer? A scrape exchange. Your end crashes hard on the running back."},
+  {"cue": "highlight_key", "narration": "But watch the Will linebacker. He swaps jobs and scrapes outside."},
+  {"cue": "play_vs_defense", "narration": "Quarterback sees the crash, pulls it, and runs right into the Will."},
+  {"cue": "recap", "narration": "Scrape exchange. Make the read wrong every time."}
+ ]
+}

@@ -6,6 +6,8 @@ script on the defense that beats it, and Chalk Talk renders a vertical (9:16) sh
 animated chalkboard draws up the play, and your headshot, animated and background-removed, talks
 through it in front of the board with word-by-word captions.
 
+A sample video for how to defend an outside zone run is in the chalk-talk/samples directory. 
+
 Everything except the script runs locally on an Apple Silicon Mac.
 
 ## How it works

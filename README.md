@@ -1,4 +1,5 @@
 # Chalk Talk
+<img width="919" height="822" alt="screenshot" src="https://github.com/user-attachments/assets/9231c4e7-3149-4b1e-a4bd-31c5b5fda68e" />
 
 Turn a headshot into a football coach. Pick an offensive formation and play; Claude writes a 30-second
 script on the defense that beats it, and Chalk Talk renders a vertical (9:16) short-form video: an
